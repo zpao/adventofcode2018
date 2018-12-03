@@ -2,10 +2,9 @@ const fs = require('fs');
 
 const input = fs.readFileSync('input.txt', 'utf8');
 
-const letterCounts = input
-  .trim()
-  .split('\n')
-  .map(countLetters);
+let ids = input.trim().split('\n');
+
+const letterCounts = ids.map(countLetters);
 
 let [twoCount, threeCount] = letterCounts.reduce(
   ([twos, threes], counts) => {
@@ -29,3 +28,26 @@ function countLetters(id) {
   });
   return counts;
 }
+
+// PART 2
+let finalMatch = null;
+// All the same length, so this is ok
+let expectedLen = ids[0].length - 1;
+for (let i = 0; i < ids.length; i++) {
+  let id = ids[i];
+  for (let j = i + 1; j < ids.length; j++) {
+    let matching = ids[j]
+      .split('')
+      .filter((char, idx) => char === id[idx])
+      .join('');
+    if (matching.length >= expectedLen) {
+      finalMatch = matching;
+      break;
+    }
+  }
+  if (finalMatch !== null) {
+    break;
+  }
+}
+
+console.log(`matching: ${finalMatch}`);
