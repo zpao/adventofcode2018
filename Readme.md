@@ -1,0 +1,1 @@
+This is me doing [Advent of Code](https://adventofcode.com) (2018). I'm mostly going to try to solve these puzzles in a variety of languages and learn some new things, so expect to see some beginner code 😀
