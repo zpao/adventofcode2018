@@ -1,0 +1,14 @@
+{
+  "name": "adventofcode2018",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:zpao/adventofcode2018.git",
+  "author": "Paul O’Shannessy <paul@oshannessy.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@types/node": "^10.12.12",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.2.1"
+  }
+}
