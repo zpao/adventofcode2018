@@ -63,5 +63,32 @@ function growBoard(board: Board, claim: Claim): Board {
   return board;
 }
 
+function part2(input: Array<Claim>) {
+  for (let i = 0; i < input.length; i++) {
+    let overlaps = false;
+    for (let j = 0; j < input.length; j++) {
+      if (j === i) {
+        continue;
+      }
+      overlaps = doesOverlap(input[i], input[j]);
+      if (overlaps) {
+        break;
+      }
+    }
+    if (!overlaps) {
+      console.log(`doesn't overlap id: ${input[i].id}`);
+      break;
+    }
+  }
+}
+
+function doesOverlap(a: Claim, b: Claim): boolean {
+  return (
+    Math.max(0, Math.min(a.x + a.w - b.x, b.x + b.w - a.x)) > 0 &&
+    Math.max(0, Math.min(a.y + a.h - b.y, b.y + b.h - a.y)) > 0
+  );
+}
+
 let parsedInput = parseInput(input);
 part1(parsedInput);
+part2(parsedInput);
