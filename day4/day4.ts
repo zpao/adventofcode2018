@@ -125,3 +125,6 @@ function solve(input: Entry[]) {
 let parsedInput = parseInput(input);
 solve(parsedInput);
 // console.log(parsedInput);
+
+// wtf typescript https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
+export {};

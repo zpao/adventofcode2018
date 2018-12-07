@@ -92,3 +92,6 @@ function doesOverlap(a: Claim, b: Claim): boolean {
 let parsedInput = parseInput(input);
 part1(parsedInput);
 part2(parsedInput);
+
+// wtf typescript https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
+export {};
