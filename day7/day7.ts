@@ -1,5 +1,3 @@
-import { start } from 'repl';
-
 const fs = require('fs');
 
 const input: string = fs.readFileSync(`${__dirname}/input`, 'utf8').trim();
@@ -9,6 +7,7 @@ interface Node {
   name: string;
   inboundEdges: Edge[];
   outboundEdges: Edge[];
+  timeToComplete: number;
 }
 
 interface Edge {
@@ -18,7 +17,7 @@ interface Edge {
 }
 
 let nodes: Map<string, Node> = new Map();
-let edges = [];
+let edges: Edge[] = [];
 
 input.split('\n').forEach(line => {
   // Step C must be finished before step A can begin.
@@ -35,9 +34,6 @@ input.split('\n').forEach(line => {
   edges.push(edge);
 });
 
-// start = node with no inbound edges
-// end = node with no outbound edges
-// everything in the middle ???
 let nodeQueue: Node[] = [];
 nodes.forEach(node => {
   if (node.inboundEdges.length === 0) {
@@ -56,11 +52,7 @@ while (nodeQueue.length !== 0) {
   for (let edge of node.outboundEdges) {
     // Nodes are identity equal, so this will ensure we don't dupe nor add incomplete nodes
     edge.completed = true;
-    let nextNode = edge.to;
-    let prereqsComplete = nextNode.inboundEdges.reduce((acc, inboundEdge) => {
-      return acc && inboundEdge.completed;
-    }, true);
-    if (prereqsComplete) {
+    if (isNodeReady(edge.to)) {
       pendingQueue.add(edge.to);
     }
   }
@@ -68,6 +60,71 @@ while (nodeQueue.length !== 0) {
 }
 
 console.log(`step order: ${strfNodes(orderedNodes)}`);
+
+interface Work {
+  node: Node;
+  startTick: number;
+}
+
+interface Worker {
+  work: null | Work;
+}
+// Part 2
+let availableWorkers: Worker[] = new Array(5);
+for (let i = 0; i < availableWorkers.length; i++) {
+  availableWorkers[i] = { work: null };
+}
+let busyWorkers: Worker[] = [];
+
+// Reset global state (oops)
+edges.forEach(edge => (edge.completed = false));
+
+let tick = 0;
+nodeQueue = orderedNodes.slice();
+while (nodeQueue.length !== 0 || busyWorkers.length !== 0) {
+  // Update busy workers, free up completed
+  for (let i = 0; i < busyWorkers.length; i++) {
+    let worker = busyWorkers[i];
+    let node = worker.work.node;
+    if (tick - worker.work.startTick === node.timeToComplete) {
+      node.outboundEdges.forEach(edge => (edge.completed = true));
+      busyWorkers.splice(i, 1);
+      i--;
+      worker.work = null;
+      availableWorkers.push(worker);
+    }
+  }
+
+  // This is brute force parallelism. It's not very smart but it works well enough for small data.
+  for (let i = 0; i < nodeQueue.length; i++) {
+    if (availableWorkers.length === 0) {
+      break;
+    }
+
+    let node = nodeQueue[i];
+    if (isNodeReady(node)) {
+      let worker = availableWorkers.shift();
+      worker.work = {
+        node,
+        startTick: tick
+      };
+      busyWorkers.push(worker);
+      nodeQueue.splice(i, 1);
+      i--;
+    }
+  }
+
+  tick++;
+}
+
+// Off by one because we increment before checking the terminal condition
+console.log(`time taken: ${tick - 1}`);
+
+function isNodeReady(node: Node): boolean {
+  return node.inboundEdges.reduce((acc, inboundEdge) => {
+    return acc && inboundEdge.completed;
+  }, true);
+}
 
 function strfNodes(nodes: Node[]): string {
   return nodes.map(node => node.name).join('');
@@ -83,7 +140,9 @@ function getNode(name: string): Node {
     node = {
       name: name,
       inboundEdges: [],
-      outboundEdges: []
+      outboundEdges: [],
+      // Convert to ascii. A = 65. We need to map that to 1, and add 60.
+      timeToComplete: name.charCodeAt(0) - 4
     };
     nodes.set(name, node);
   }
